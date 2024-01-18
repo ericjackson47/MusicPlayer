@@ -1,0 +1,108 @@
+const container = document.querySelector(".container");
+const musicContainer = document.querySelector(".music-container");
+const audio = document.querySelector("audio");
+const currentDateAndTime = document.querySelector(".current-date-and-time");
+const currentProgressTag = document.getElementById("current-progress");
+const progressbarTag = document.getElementById("progress-bar");
+const playButtonTag = document.getElementsByClassName("play-button")[0];
+const pauseButtonTag = document.getElementsByClassName("pause-button")[0];
+const nextButtonTag = document.getElementsByClassName("next-button")[0];
+const prevButtonTag = document.getElementsByClassName("prev-button")[0];
+
+const tracks = [    
+    {trackId : "../thumbnails/sample-6s.mp3", Name: "Sample 6 audio"},
+    {trackId : "../thumbnails/sample-9s.mp3", Name: "Sample 9 audio"},
+    {trackId : "../thumbnails/sample-12s.mp3", Name: "Sample 12 audio"},
+];
+ 
+for(let i = 0; i < tracks.length; i++){
+    const trackItem = document.createElement("div");
+    trackItem.classList.add("track-Item");
+    const title = (i + 1).toString() + ". " + tracks[i].Name;
+    trackItem.textContent = title;
+    musicContainer.append(trackItem);
+    trackItem.addEventListener("click", () => {
+        songID = i;
+        playSong();
+    })
+}
+let durationTime = "00:00";
+let secondsAndMinutes = (current) => {
+    const minutes = Math.floor(current/60); // mins
+    const seconds = current%60; //secs
+
+    const minutesText = minutes < 10 ? "0" + minutes.toString() : minutes;
+    const secondText = seconds < 10 ? "0" + seconds.toString() : seconds;
+    return minutesText + ":" + secondText;
+    //console.log(minutesText + ":" + secondText);
+}
+let audioDuration;
+audio.addEventListener("loadeddata", () => {
+    audioDuration = Math.floor(audio.duration); //249.232 => 249
+    durationTime = secondsAndMinutes(audioDuration);
+    playAndPauseButton();
+})
+
+audio.addEventListener("timeupdate", () => {
+    const audioCurrentTime = Math.floor(audio.currentTime); // 432.234
+    const currenttime = secondsAndMinutes(audioCurrentTime);
+    const currentDateAndTimeUpdate = durationTime + "/" + currenttime;
+    currentDateAndTime.textContent = currentDateAndTimeUpdate;
+    const currentplayer = (500/audioDuration) * audioCurrentTime;
+    currentProgressTag.style.width = currentplayer.toString() + "px";
+    progressbarTag.append(currentProgressTag);
+})
+
+
+var songID;
+let isPlaying = false;
+const playSong = () => {
+    const songPlaying = tracks[songID].trackId;
+    audio.src = songPlaying;
+    audio.play();
+    isPlaying = false;
+    playAndPauseButton();
+}
+
+const playAndPauseButton = () => {
+    if(isPlaying) {
+        pauseButtonTag.style.display = "none";
+        playButtonTag.style.display = "inline";
+    } else {
+        pauseButtonTag.style.display = "inline";
+        playButtonTag.style.display = "none ";
+    }
+}
+
+playButtonTag.addEventListener("click", () => {
+    const audioCurrentTime = Math.floor(audio.currentTime);
+    if(audioCurrentTime === 0) {
+        playSong();
+    } else {
+        isPlaying = false;
+        audio.play();
+        playAndPauseButton();
+    }
+})
+
+pauseButtonTag.addEventListener("click", () => {
+    isPlaying = true;
+    audio.pause();
+    playAndPauseButton();
+})
+
+nextButtonTag.addEventListener("click", () => {
+    if(songID === tracks.length-1){
+        return;
+    }
+    songID += 1;
+    playSong();
+})
+
+prevButtonTag.addEventListener("click", () => {
+    if(songID === 0){
+        return;
+    }
+    songID -= 1;
+    playSong();
+})
